@@ -27,11 +27,3 @@ hc_matrix = hc.build_geometry_matrix()
 print("hc_matrix =")
 print(hc_matrix)
 
-# ============================================================
-# Normalization
-# ============================================================
-hc_normalized_matrix = hc.normalize_matrix()
-print("hc_normalized_matrix =")
-print(hc_normalized_matrix)
-print("min_list =", hc.min_list)
-print("max_list =", hc.max_list)

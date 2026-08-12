@@ -17,6 +17,8 @@ class HermiteCurve:
 
     # Input Data를 가지고 Matrix 생성
     def build_geometry_matrix(self):
+        # Dictionary에 있는 input_data를 각 용소로 옮기기
+        # 리스트 형태로 저장
         P0 = self.input_data["P0"]
         P1 = self.input_data["P1"]
         T0 = self.input_data["T0"]
@@ -37,31 +39,3 @@ class HermiteCurve:
 
         return self.matrix
 
-    # Normalization
-    def normalize_matrix(self):
-        self.min_list = []
-        self.max_list = []
-
-        normalized_rows = []
-
-        for row in self.matrix.components:
-            row_min = min(row)
-            row_max = max(row)
-            variation = row_max - row_min
-
-            self.min_list.append(row_min)
-            self.max_list.append(row_max)
-
-            normalized_row = []
-
-            for value in row:
-                if variation == 0:
-                    normalized_row.append(0.0)
-                else:
-                    normalized_row.append((value - row_min) / variation)
-
-            normalized_rows.append(normalized_row)
-
-        self.normalized_matrix = Matrix(normalized_rows)
-
-        return self.normalized_matrix
