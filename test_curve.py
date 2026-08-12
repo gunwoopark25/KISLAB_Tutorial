@@ -5,11 +5,11 @@ from HermiteCurve import HermiteCurve
 # 데이터 입력
 # ============================================================
 input_data = {
-    "P0": Vector.xyz(100, 200, 0),
+    "P0": Vector.xyz(0, 200, 0),
     "P1": Vector.xyz(200, 300, 0),
-    "T0": Vector.xyz(10, 20, 0),
-    "T1": Vector.xyz(20, 30, 0),
-    "parameter": 4,
+    "T0": Vector.xyz(0, 150, 0),
+    "T1": Vector.xyz(0, 150, 0),
+    "parameter": 100,
 }
 
 hc = HermiteCurve(input_data)
@@ -30,6 +30,11 @@ hc_POC = hc.compute_curve_points()
 print("calculated_point =")
 for point in hc_POC:
     print(point)
+
+# ============================================================
+# 그래프 출력
+# ============================================================
+hc.plot_curve()
 
 
 

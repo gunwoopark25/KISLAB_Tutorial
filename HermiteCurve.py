@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 from Matrix import Matrix
 from Vector import Vector
 
@@ -47,7 +48,7 @@ class HermiteCurve:
 
         return self.matrix
 
-    # parameter 개수만큼 t = i/parameter (0~parameter)를 반복하며 곡선 위의 점들을 계산
+    # parameter 개수만큼 t = i/parameter 를 반복하면서 계산
     def compute_curve_points(self):
         if not hasattr(self, "matrix"):
             raise RuntimeError("build_geometry_matrix()를 먼저 호출해야 합니다.")
@@ -82,3 +83,23 @@ class HermiteCurve:
 
         return self.POC
 
+    # self.POC에 저장된 점들을 그래프로 표시 (x, y 평면 기준)
+    def plot_curve(self):
+        if not hasattr(self, "POC"):
+            raise RuntimeError("compute_curve_points()를 먼저 호출해야 합니다.")
+
+        x_list = []
+        y_list = []
+
+        for entry in self.POC:
+            point = entry["point"]
+            x_list.append(point.components[0])
+            y_list.append(point.components[1])
+
+        plt.plot(x_list, y_list, marker="o")
+        plt.title("Hermite Curve")
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.axis("equal")
+        plt.grid(True)
+        plt.show()
