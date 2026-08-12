@@ -13,10 +13,6 @@ input_data = {
 }
 
 hc = HermiteCurve(input_data)
-
-# ============================================================
-# input_data 확인 출력
-# ============================================================
 print("hc.input_data =")
 print(hc.input_data)
 
@@ -26,4 +22,15 @@ print(hc.input_data)
 hc_matrix = hc.build_geometry_matrix()
 print("hc_matrix =")
 print(hc_matrix)
+
+# ============================================================
+# Matrix 연산 생성
+# ============================================================
+hc_POC = hc.compute_curve_points()
+print("calculated_point =")
+for point in hc_POC:
+    print(point)
+
+
+
 

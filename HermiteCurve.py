@@ -2,6 +2,14 @@ from Matrix import Matrix
 from Vector import Vector
 
 class HermiteCurve:
+    # Hermite 기저 행렬 (T(t) = [t^3, t^2, t, 1] 기준)
+    M_H = Matrix([
+        [2, -3, 0, 1],
+        [-2, 3, 0, 0],
+        [1, -2, 1, 0],
+        [1, -1, 0, 0],
+    ])
+
     def __init__(self, input_data:dict): #InputData는 Dictionary로 받음
         # input_data가 dictionary이여야 가능함
         if not isinstance(input_data, dict):
@@ -12,7 +20,7 @@ class HermiteCurve:
         # Parameter의 값이 1이나 2일 경우에 곡선이 형성 될 수 없음
         if not isinstance(parameter, int) or parameter < 3:
             raise ValueError("parameter는 3 이상의 정수여야 합니다.")
-        
+
         self.input_data = input_data
 
     # Input Data를 가지고 Matrix 생성
@@ -38,4 +46,39 @@ class HermiteCurve:
         self.matrix = Matrix(rows)
 
         return self.matrix
+
+    # parameter 개수만큼 t = i/parameter (0~parameter)를 반복하며 곡선 위의 점들을 계산
+    def compute_curve_points(self):
+        if not hasattr(self, "matrix"):
+            raise RuntimeError("build_geometry_matrix()를 먼저 호출해야 합니다.")
+
+        parameter = self.input_data["parameter"]
+
+        self.POC = []
+
+        for i in range(parameter + 1):
+            t = i / parameter
+
+            T = Matrix([
+                [t ** 3],
+                [t ** 2],
+                [t],
+                [1],
+            ])
+
+            L = self.M_H * T
+            P = self.matrix * L
+
+            point = Vector.xyz(
+                P.components[0][0],
+                P.components[1][0],
+                P.components[2][0],
+            )
+
+            self.POC.append({
+                "t": t,
+                "point": point,
+            })
+
+        return self.POC
 
