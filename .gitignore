@@ -1,0 +1,17 @@
+# Ignore everything by default.
+*
+
+# Allow directory traversal so Python sources in subdirectories are included.
+!*/
+
+# Files required to run the project.
+!*.py
+!pyproject.toml
+
+# Public repository metadata.
+!/README.md
+!/LICENSE
+!/LICENSE.*
+
+# Keep this allowlist itself.
+!/.gitignore
