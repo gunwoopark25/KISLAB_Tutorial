@@ -24,6 +24,7 @@ class HermiteCurve:
 
         rows = []
 
+        # 현재는 열의 개수가 정해져있기때문에 range = 3으로 표기 되었지만 수정되어야함
         for axis_index in range(3):
             rows.append([
                 P0.components[axis_index],
