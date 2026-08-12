@@ -83,7 +83,7 @@ class HermiteCurve:
 
         return self.POC
 
-    # self.POC에 저장된 점들을 그래프로 표시 (x, y 평면 기준)
+    # self.POC에 저장된 점들을 그래프로 표시
     def plot_curve(self):
         if not hasattr(self, "POC"):
             raise RuntimeError("compute_curve_points()를 먼저 호출해야 합니다.")

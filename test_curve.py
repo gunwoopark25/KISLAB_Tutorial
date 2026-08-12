@@ -9,7 +9,7 @@ input_data = {
     "P1": Vector.xyz(200, 300, 0),
     "T0": Vector.xyz(0, 150, 0),
     "T1": Vector.xyz(0, 150, 0),
-    "parameter": 100,
+    "parameter": 20,
 }
 
 hc = HermiteCurve(input_data)
