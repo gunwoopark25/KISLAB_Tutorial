@@ -6,6 +6,7 @@ from Vector import Vector
 # ============================================================
 # 데이터 입력
 # ============================================================
+# Degree가 n이면 cp0 ~ cpn 까지 n+1개의 컨트롤 포인트를 넣어주면 됨
 input_data = {
     "cp0": Vector.xyz(100, 100, 0),
     "cp1": Vector.xyz(150, 250, 0),
@@ -19,15 +20,17 @@ input_data = {
 }
 
 beziercurve = DeCasteljau(input_data)
-print("beziercurve.input_data =")
-print(beziercurve.input_data)
+print("control_points =")
+for control_point in beziercurve.control_points:
+    print(control_point)
 
 # ============================================================
 # Normalize
 # ============================================================
 normalization = beziercurve.normalize()
-print("beziercurve. =")
-print(normalization)
+print("normalization =")
+for key, normalized_point in normalization.items():
+    print(key, normalized_point)
 
 # ============================================================
 # Calculate

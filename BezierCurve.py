@@ -14,45 +14,46 @@ class DeCasteljau:
             "parameter": 20,
             "Degree": 3,
         }
+        # Degree가 n이면 컨트롤 포인트는 cp0 ~ cpn 으로 n+1개가 필요함
         """
         if not isinstance(input_data, dict):
             raise TypeError("input_data는 dict")
 
         self.input_data = input_data
 
+        self.degree = input_data["Degree"]
+        self.parameter = input_data["parameter"]
+
+        # Degree에 맞춰 cp0 ~ cp{Degree} 를 순서대로 모으기
+        self.control_points = []
+
+        for i in range(self.degree + 1):
+            key = "cp" + str(i)
+            self.control_points.append(input_data[key])
+
     def normalize(self):
-        cp0 = self.input_data["cp0"]
-        cp1 = self.input_data["cp1"]
-        cp2 = self.input_data["cp2"]
-        cp3 = self.input_data["cp3"]
+        cp0 = self.control_points[0]
+        others = self.control_points[1:]
 
-        normalized_vectors, self.max_vector, self.min_vector, self.variation = cp0.normalization(cp1, cp2, cp3)
-        normalized_cp0, normalized_cp1, normalized_cp2, normalized_cp3 = normalized_vectors
+        normalized_points, self.max_vector, self.min_vector, self.variation = cp0.normalization(*others)
 
-        self.normalized_data = {
-            "cp0": normalized_cp0,
-            "cp1": normalized_cp1,
-            "cp2": normalized_cp2,
-            "cp3": normalized_cp3,
-        }
+        self.normalized_points = normalized_points
+
+        self.normalized_data = {}
+
+        for i, normalized_point in enumerate(normalized_points):
+            self.normalized_data["cp" + str(i)] = normalized_point
 
         return self.normalized_data
 
     def calculate(self):
-        parameter = self.input_data["parameter"]
-
         self.normalized_curve = []
 
-        for k in range(parameter + 1):
-            t = k / parameter
+        for k in range(self.parameter + 1):
+            t = k / self.parameter
 
             # De Casteljau 삼각형 축소: 레벨마다 인접한 두 점을 t로 보간해 점 개수를 하나씩 줄여나감
-            points = [
-                self.normalized_data["cp0"],
-                self.normalized_data["cp1"],
-                self.normalized_data["cp2"],
-                self.normalized_data["cp3"],
-            ]
+            points = self.normalized_points
 
             while len(points) > 1:
                 next_points = []
@@ -81,15 +82,8 @@ class DeCasteljau:
         return self.curve
 
     def visualize(self):
-        cp_points = [
-            self.input_data["cp0"],
-            self.input_data["cp1"],
-            self.input_data["cp2"],
-            self.input_data["cp3"],
-        ]
-
-        cp_x = [cp.components[0] for cp in cp_points]
-        cp_y = [cp.components[1] for cp in cp_points]
+        cp_x = [cp.components[0] for cp in self.control_points]
+        cp_y = [cp.components[1] for cp in self.control_points]
 
         poc_x = [point.components[0] for point in self.curve]
         poc_y = [point.components[1] for point in self.curve]
@@ -108,6 +102,7 @@ class DeCasteljau:
             label='Bezier Curve',
         )
 
+        plt.title("Bezier Curve (Degree " + str(self.degree) + ")")
         plt.axis('equal')
         plt.legend()
         plt.show()
