@@ -1,8 +1,29 @@
-import matplotlib.pyplot as plt
-
 from BezierCurve import DeCasteljau
-from Matrix import Matrix
+from BezierCurve import Interploation
 from Vector import Vector
+# ============================================================
+# 알고리즘
+# ============================================================
+"""
+## Bezier Curve Algorithm
+1. InputData
+2. Normalize
+3. Calculate
+4. Denormalize
+5. Visualization
+
+## Interpolation
+1. InputData
+2. ChordLength
+3. Normalize
+4. Calculate
+    4-1. BernsteinMatrix
+    4-2. GaussElimination
+    4-3. MatrixMul
+    4-4. DeCasteljau
+5. Denormalize
+4. Visualization
+"""
 # ============================================================
 # 데이터 입력
 # ============================================================

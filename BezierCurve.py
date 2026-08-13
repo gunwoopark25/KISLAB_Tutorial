@@ -106,3 +106,19 @@ class DeCasteljau:
         plt.axis('equal')
         plt.legend()
         plt.show()
+
+class Interploation:
+    def __init__(self,input_data:dict):
+        if not isinstance(input_data, dict):
+            raise TypeError("input_data는 dict")
+
+        self.input_data = input_data
+        self.degree = input_data["Degree"]
+        self.parameter = input_data["parameter"]
+
+        self.poc = []
+        for i in range(self.degree + 1):
+            key = "cp" + str(i)
+            self.poc.append(input_data[key])
+
+    def ChrodLength(self):
