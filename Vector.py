@@ -64,15 +64,23 @@ class Vector:
         return Vector(*result_components)
     ## 곱하기
     def __mul__(self, other):
+        if isinstance(other, Number):
+            result_components = [c * other for c in self.components]
+            return Vector(*result_components)
+
         if len(self.components) != len(other.components):
             raise ValueError("같은 차원의 Vector끼리만 연산 가능")
-    
+
         result_components = []
-    
+
         for a,b in zip(self.components, other.components):
             result_components.append(a*b)
-            
+
         return Vector(*result_components)
+
+    ## 스칼라 * 벡터 (예: t * vector)
+    def __rmul__(self, other):
+        return self.__mul__(other)
     ## 나누기
     def __truediv__(self, other):
         if len(self.components) != len(other.components):
@@ -156,7 +164,7 @@ class Vector:
                     normalized_components.append((value - min_val) / dv)
             normalized_vectors.append(Vector(*normalized_components))
 
-        return normalized_vectors
+        return normalized_vectors, Vector(*max_list), Vector(*min_list), Vector(*variation)
     
     # Magnitude
     def magnitude(self):
