@@ -118,7 +118,43 @@ class Interploation:
 
         self.poc = []
         for i in range(self.degree + 1):
-            key = "cp" + str(i)
+            key = "poc" + str(i)
             self.poc.append(input_data[key])
 
-    def ChrodLength(self):
+    def Chordlength(self):
+        # l[i-1] = POC[i]와 POC[i-1] 사이의 직선 거리
+        self.l = []
+
+        for i in range(1, len(self.poc)):
+            segment_length = (self.poc[i] - self.poc[i - 1]).magnitude()
+            self.l.append(segment_length)
+
+        # u[0] = 0, u[i] = u[i-1] + l[i-1] 누적합
+        self.u = [0]
+
+        for i in range(1, len(self.poc)):
+            self.u.append(self.u[i - 1] + self.l[i - 1])
+
+        return self.u
+
+    def Normalize(self):
+        # POC 좌표 정규화 (DeCasteljau.normalize()와 동일한 방식)
+        poc0 = self.poc[0]
+        others = self.poc[1:]
+
+        self.normalized_poc, self.max_vector, self.min_vector, self.variation = poc0.normalization(*others)
+
+        # u(chord length 누적값) 정규화: u[0]=0이 최솟값이라 u[-1](총 길이)로 나누는 것과 동일
+        self.normalized_u = []
+
+        u_min = self.u[0]
+        u_max = self.u[-1]
+        u_range = u_max - u_min
+
+        for value in self.u:
+            if u_range == 0:
+                self.normalized_u.append(0)
+            else:
+                self.normalized_u.append((value - u_min) / u_range)
+
+        return self.normalized_poc, self.normalized_u
