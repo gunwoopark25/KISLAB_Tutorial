@@ -21,7 +21,7 @@ from Vector import Vector
     4-3. MatrixMul
     4-4. DeCasteljau
 5. Denormalize
-4. Visualization
+6. Visualization
 """
 # ============================================================
 # 데이터 입력

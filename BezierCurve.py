@@ -1,3 +1,4 @@
+import math
 import matplotlib.pyplot as plt
 from Matrix import Matrix
 from Vector import Vector
@@ -158,3 +159,109 @@ class Interploation:
                 self.normalized_u.append((value - u_min) / u_range)
 
         return self.normalized_poc, self.normalized_u
+
+    def Calculate(self):
+        # 4-1. BernsteinMatrix: Matrix[i][j] = nCr(Degree,j) * (1-u_i)^(Degree-j) * (u_i)^j
+        bernstein_components = []
+
+        for i in range(self.degree + 1):
+            u_i = self.normalized_u[i]
+            row = []
+
+            for j in range(self.degree + 1):
+                n_c_r = math.comb(self.degree, j) #nCr 조합 연산
+                basis = n_c_r * ((1 - u_i) ** (self.degree - j)) * (u_i ** j) # Basis Function
+                row.append(basis)
+
+            bernstein_components.append(row)
+
+        self.bernstein_matrix = Matrix(bernstein_components)
+
+        # 4-2. GaussElimination: Bernstein 행렬의 역행렬 계산 (Matrix.inverse가 Gauss-Jordan으로 구현)
+        self.inverse_matrix = self.bernstein_matrix.inverse()
+
+        # 4-3. MatrixMul: CP = BernsteinMatrix^-1 * POC
+        poc_components = [list(point.components) for point in self.normalized_poc]
+        poc_matrix = Matrix(poc_components)
+
+        cp_matrix = self.inverse_matrix * poc_matrix
+
+        self.control_points = [Vector(*row) for row in cp_matrix.components]
+
+        # 4-4. DeCasteljau: 계산된 컨트롤 포인트로 곡선 위의 점들 계산
+        self.normalized_curve = []
+
+        for k in range(self.parameter + 1):
+            t = k / self.parameter
+
+            points = self.control_points
+
+            while len(points) > 1:
+                next_points = []
+
+                for i in range(len(points) - 1):
+                    p0 = points[i]
+                    p1 = points[i + 1]
+
+                    new_point = (1 - t) * p0 + t * p1
+
+                    next_points.append(new_point)
+
+                points = next_points
+
+            self.normalized_curve.append(points[0])
+
+        return self.normalized_curve
+
+    def Denormalize(self):
+        self.curve = []
+
+        for normalized_point in self.normalized_curve:
+            denormalized_point = normalized_point * self.variation + self.min_vector
+            self.curve.append(denormalized_point)
+
+        # Calculate()에서 구한 컨트롤 포인트도 정규화된 공간의 값이라 같이 되돌려야 함
+        self.denormalized_control_points = []
+
+        for normalized_cp in self.control_points:
+            denormalized_cp = normalized_cp * self.variation + self.min_vector
+            self.denormalized_control_points.append(denormalized_cp)
+
+        return self.curve
+
+    def Visualization(self):
+        cp_x = [cp.components[0] for cp in self.denormalized_control_points]
+        cp_y = [cp.components[1] for cp in self.denormalized_control_points]
+
+        # 첫/마지막 CP는 POC 시작·끝점과 같은 위치라 곡선 마커와 겹치므로 흰 점 표시에서는 제외
+        middle_control_points = self.denormalized_control_points[1:-1]
+
+        middle_cp_x = [cp.components[0] for cp in middle_control_points]
+        middle_cp_y = [cp.components[1] for cp in middle_control_points]
+
+        poc_x = [point.components[0] for point in self.curve]
+        poc_y = [point.components[1] for point in self.curve]
+
+        plt.plot(
+            cp_x, cp_y,
+            linestyle='-', color='black',
+            label='Control Polygon',
+        )
+        plt.plot(
+            middle_cp_x, middle_cp_y,
+            linestyle='None',
+            marker='o', markersize=8,
+            markerfacecolor='white', markeredgecolor='black',
+            label='Control Points',
+        )
+        plt.plot(
+            poc_x, poc_y,
+            linestyle='-', color='blue',
+            marker='o', markersize=4,
+            label='Bezier Curve',
+        )
+
+        plt.title("Interpolation (Degree " + str(self.degree) + ")")
+        plt.axis('equal')
+        plt.legend()
+        plt.show()

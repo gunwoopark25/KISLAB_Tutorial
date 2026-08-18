@@ -285,3 +285,33 @@ class Matrix:
                 lower.components[j][i] = value / upper.components[i][i]
 
         return lower, upper
+
+    ## 역행렬 (Gauss-Jordan Elimination)
+    def inverse(self):
+        if self.rows != self.columns:
+            raise ValueError("정방행렬만 역행렬을 구할 수 있습니다.")
+
+        n = self.rows
+        working = Matrix(self)  # 원본 복사본 (좌측 절반)
+        result = Matrix.identity(n)  # 단위행렬로 시작해서 역행렬로 축소됨 (우측 절반)
+
+        for i in range(n):
+            pivot = working.components[i][i]
+
+            if abs(pivot) < 1e-10:
+                raise ValueError("피벗이 0이라 역행렬을 구할 수 없습니다.")
+
+            for j in range(n):
+                working.components[i][j] /= pivot
+                result.components[i][j] /= pivot
+
+            for k in range(n):
+                if k != i:
+                    factor = working.components[k][i]
+
+                    if factor != 0:
+                        for j in range(n):
+                            working.components[k][j] -= working.components[i][j] * factor
+                            result.components[k][j] -= result.components[i][j] * factor
+
+        return result
