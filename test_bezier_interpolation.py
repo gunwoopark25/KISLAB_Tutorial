@@ -23,3 +23,13 @@ for poc in beziercurve.poc:
 chordlength = beziercurve.Chordlength()
 print("chordlength =")
 print(chordlength)
+
+# ============================================================
+# Nrmaization
+# ============================================================
+normalized_poc, normalized_u = beziercurve.Normalize()
+print("normalized_poc =")
+for poc in normalized_poc:
+    print(poc)
+print("normalized_u =")
+
