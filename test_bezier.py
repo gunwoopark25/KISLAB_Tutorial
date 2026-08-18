@@ -31,11 +31,8 @@ input_data = {
     "cp1": Vector.xyz(150, 250, 0),
     "cp2": Vector.xyz(200, 300, 0),
     "cp3": Vector.xyz(250, 400, 0),
-    "cp4": Vector.xyz(300, 300, 0),
-    "cp5": Vector.xyz(350, 250, 0),
-    "cp6": Vector.xyz(400, 100, 0),
     "parameter": 5,
-    "Degree": 6,
+    "Degree": 3,
 }
 
 beziercurve = DeCasteljau(input_data)
