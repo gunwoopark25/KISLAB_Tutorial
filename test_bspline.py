@@ -10,7 +10,7 @@ input_data = {
     "cp2": 200,
     "cp3": 150,
     "cp4": 25,
-    "parameter": 5,
+    "parameter": 200,
     "Degree": 3,
     "knots" : [50,50,50,200,350,350,350],
 }
@@ -25,3 +25,13 @@ for control_point in bsplinecurve.control_points:
 # ============================================================
 abscissae = bsplinecurve.greville()
 print(abscissae)
+
+poc = bsplinecurve.compute_curve_points()
+print("POC =")
+for point in poc:
+    print(point)
+
+# ============================================================
+# visualization
+# ============================================================
+bsplinecurve.visualize()
