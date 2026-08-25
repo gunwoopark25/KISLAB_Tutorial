@@ -162,17 +162,7 @@ class de_boor:
 
 class Interpolation:
     def __init__(self,input_data:dict): #딕셔너리로 input_data받기
-        """
-        # 데이터 입력 방식
-        input_data = {
-            "poc0": Vector.xyz(200, 300, 0),
-            "poc1": Vector.xyz(300, 400, 0),
-            "poc2": Vector.xyz(400, 200, 0),
-            "poc3": Vector.xyz(500, 300, 0),
-            "parameter": 6,
-            "Degree": 3,
-        }
-        """
+
         if not isinstance(input_data, dict):
             raise TypeError("input_data는 dict")
 
@@ -182,7 +172,6 @@ class Interpolation:
 
         # poc 동적할당
         self.poc = []
-
         i = 0
         while ("poc" + str(i)) in input_data:
             self.poc.append(input_data["poc" + str(i)])
@@ -199,7 +188,7 @@ class Interpolation:
             segment_length = (self.poc[i] - self.poc[i - 1]).magnitude()
             self.l.append(segment_length)
 
-        # u[0] = 0, u[i] = u[i-1] + l[i-1] 누적합
+        # u[i] = u[i-1] + l[i-1]
         self.u = [0.0]
 
         for i in range(1, self.poc_count):
@@ -207,8 +196,7 @@ class Interpolation:
 
         return self.u
 
-    # ③ KnotVector
-    # knots를 입력받지 않으므로 u로부터 직접 생성함
+    # Knot 생성
     def KnotVector(self):
         self.knots = []
 
@@ -217,7 +205,6 @@ class Interpolation:
             self.knots.append(self.u[0])
 
         # 내부 knot: 연속한 u를 Degree개씩 평균 (de Boor averaging)
-        # 이렇게 해야 각 u_i가 대응하는 basis의 영향권 안에 들어와서 행렬이 정칙이 됨
         for j in range(1, self.poc_count - self.degree):
             knot_group = self.u[j:j + self.degree]
 
@@ -231,11 +218,9 @@ class Interpolation:
         for _ in range(self.degree):
             self.knots.append(self.u[-1])
 
-        # len(knots) = POC 개수 + Degree - 1 이 되어 de_boor의 규칙과 맞음
         return self.knots
 
-    # N_index(u) = index번째 control point만 1이고 나머지가 0인 B-Spline 곡선의 u에서의 값
-    # de_boor를 그대로 재사용하므로 4-1과 4-4의 규칙이 어긋날 수 없음
+    # basis function
     def basis_function(self, index, u):
         unit_input = {
             "Degree": self.degree,
@@ -251,7 +236,7 @@ class Interpolation:
 
         return de_boor(unit_input).evaluate(u)
 
-    # ④ Calculate
+    # Calculate
     def Calculate(self):
         # 4-1. BSplineMatrix: Matrix[i][j] = N_j(u_i)
         basis_components = []

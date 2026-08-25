@@ -25,7 +25,7 @@ input_data = {
     "poc1": Vector.xyz(300, 400, 0),
     "poc2": Vector.xyz(400, 200, 0),
     "poc3": Vector.xyz(500, 300, 0),
-    "parameter": 5,
+    "parameter": 100,
     "Degree": 3,
 }
 
