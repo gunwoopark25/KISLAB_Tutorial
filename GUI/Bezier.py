@@ -1,4 +1,13 @@
+import math
+from Matrix import Matrix
+from Vector import Vector
+
 class BuildCurve:
+    def __init__(self, degree, parameter, control_points):
+        self.degree = degree
+        self.parameter = parameter
+        self.control_points = control_points
+
     def normalize(self):
             cp0 = self.control_points[0]
             others = self.control_points[1:]
@@ -50,6 +59,11 @@ class BuildCurve:
         return self.curve
 
 class Interpolation:
+    def __init__(self, degree, parameter, poc):
+        self.degree = degree
+        self.parameter = parameter
+        self.poc = poc
+
     def Chordlength(self):
         # l[i-1] = POC[i]와 POC[i-1] 사이의 직선 거리
         self.l = []

@@ -1,4 +1,17 @@
+import math
+from Matrix import Matrix
+from Vector import Vector
+
 class BuildCurve:
+    def __init__(self, degree, parameter, knots, control_point_count, control_points, domain_start, domain_end):
+        self.degree = degree
+        self.parameter = parameter
+        self.knots = knots
+        self.control_point_count = control_point_count
+        self.control_points = control_points
+        self.domain_start = domain_start
+        self.domain_end = domain_end
+
     def Greville(self):
         # ζ_i = (u_i + u_{i+1} + ... + u_{i+Degree-1}) / Degree
         self.greville_X = []
@@ -61,7 +74,7 @@ class BuildCurve:
     # u에서의 knot 중복도를 확인해서, Degree가 될 때까지만 insert_knot을 반복
     def Evaluate(self, u):
         # 원본 knots/control_points를 건드리지 않도록 얕은 복제본에서 계산
-        clone = de_boor.__new__(de_boor)
+        clone = BuildCurve.__new__(BuildCurve)
         clone.degree = self.degree
         clone.knots = list(self.knots)
         clone.control_points = list(self.control_points)
@@ -70,7 +83,7 @@ class BuildCurve:
         multiplicity = clone.knots.count(u)
 
         for _ in range(self.degree - multiplicity):
-            clone.insert_knot(u)
+            clone.Insert_knot(u)
 
         index = clone.knots.index(u)
 
@@ -85,11 +98,17 @@ class BuildCurve:
         for k in range(self.parameter + 1):
             u = self.domain_start + k * step
 
-            self.POC.append(self.evaluate(u))
+            self.POC.append(self.Evaluate(u))
 
         return self.POC    
 
 class Interpolation:
+    def __init__(self, degree, parameter, poc, poc_count):
+        self.degree = degree
+        self.parameter = parameter
+        self.poc = poc
+        self.poc_count = poc_count
+
     # Chordlength
     def Chordlength(self):
         # l[i-1]
@@ -133,19 +152,25 @@ class Interpolation:
 
     # basis function
     def Basis_function(self, index, u):
-        unit_input = {
-            "Degree": self.degree,
-            "parameter": self.parameter,
-            "knots": list(self.knots),
-        }
+        knots = list(self.knots)
+        control_point_count = len(knots) - self.degree + 1
+        domain_start = knots[self.degree - 1]
+        domain_end = knots[len(knots) - self.degree]
 
+        unit_control_points = []
         for i in range(self.poc_count):
             if i == index:
-                unit_input["cp" + str(i)] = 1.0
+                unit_control_points.append(1.0)
             else:
-                unit_input["cp" + str(i)] = 0.0
+                unit_control_points.append(0.0)
 
-        return de_boor(unit_input).evaluate(u)
+        unit_curve = BuildCurve(
+            self.degree, self.parameter, knots,
+            control_point_count, unit_control_points,
+            domain_start, domain_end,
+        )
+
+        return unit_curve.Evaluate(u)
 
     # Calculate
     def Calculate(self):
@@ -157,7 +182,7 @@ class Interpolation:
             row = []
 
             for j in range(self.poc_count):
-                row.append(self.basis_function(j, u_i)) # Basis Function
+                row.append(self.Basis_function(j, u_i)) # Basis Function
 
             basis_components.append(row)
 
@@ -175,16 +200,16 @@ class Interpolation:
         self.control_points = [Vector(*row) for row in cp_matrix.components]
 
         # 4-4. de Boor: 계산된 control point로 곡선 위의 점들 계산
-        curve_input = {
-            "Degree": self.degree,
-            "parameter": self.parameter,
-            "knots": list(self.knots),
-        }
+        knots = list(self.knots)
+        control_point_count = len(knots) - self.degree + 1
+        domain_start = knots[self.degree - 1]
+        domain_end = knots[len(knots) - self.degree]
 
-        for i in range(self.poc_count):
-            curve_input["cp" + str(i)] = self.control_points[i]
-
-        self.curve_solver = de_boor(curve_input)
-        self.curve = self.curve_solver.compute_curve_points()
+        self.curve_solver = BuildCurve(
+            self.degree, self.parameter, knots,
+            control_point_count, self.control_points,
+            domain_start, domain_end,
+        )
+        self.curve = self.curve_solver.Compute_curve_points()
 
         return self.curve

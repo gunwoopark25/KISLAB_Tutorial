@@ -1,5 +1,11 @@
+import matplotlib.pyplot as plt
+
 class Visualize:
-    def __init__(self):
+    def __init__(self, control_points, curve, degree):
+        self.control_points = control_points
+        self.curve = curve
+        self.degree = degree
+
         cp_x = [cp.components[0] for cp in self.control_points]
         cp_y = [cp.components[1] for cp in self.control_points]
 

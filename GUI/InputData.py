@@ -29,21 +29,25 @@ class Inputdata:
         if not isinstance(input_data,dict):
             raise TypeError("Input Data가 Dictionary 형태가 아닙니다.")
 
-        self.kind_of_curve = input_data["커브종류"]
+        self.kind_of_curve = input_data["커브 종류"]
         self.kind_of_struct_curve = input_data["커브 생성 방식"]
         self.input_data = input_data
         self.degree = input_data["Degree"]
         self.parameter = input_data["parameter"]
 
-        # 커브 종류가 B-Spline인 경우
-        if self.kind_of_curve == "B-Spline":
-            self.knots = list(input_data["knots"])
-            self.control_point_count = len(self.knots) - self.degree + 1
-            self.domain_start = self.knots[self.degree - 1]
-            self.domain_end = self.knots[len(self.knots) - self.degree]
-
         # 커브 생성 방식이 BuildCurve인 경우와 Interpolation인 경우를 나눠서 데이터 처리
         if self.kind_of_struct_curve == "BuildCurve": # CP를 가지고 Curve 생성
+            # 커브 종류가 Bspline인 경우: knots를 직접 입력받아 control point 개수를 역산
+            # (Interpolation은 knots를 입력받지 않고 알고리즘 내부에서 직접 만들어내므로 여기서 요구하지 않음)
+            if self.kind_of_curve == "Bspline":
+                self.knots = list(input_data["knots"])
+                self.control_point_count = len(self.knots) - self.degree + 1
+                self.domain_start = self.knots[self.degree - 1]
+                self.domain_end = self.knots[len(self.knots) - self.degree]
+            else:
+                # Bezier는 knots가 없어서 control point 개수가 Degree + 1로 고정됨
+                self.control_point_count = self.degree + 1
+
             self.control_points = []
             for i in range(self.control_point_count):
                         key = "cp" + str(i)
