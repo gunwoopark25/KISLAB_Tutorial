@@ -1,51 +1,21 @@
-import math
-import matplotlib.pyplot as plt
-from Matrix import Matrix
-from Vector import Vector
-
-class de_boor:
-    def __init__(self,input_data:dict): #딕셔너리로 input_data받기
-        if not isinstance(input_data, dict):
-            raise TypeError("input_data는 dict")
-
-        self.input_data = input_data
-        self.degree = input_data["Degree"]
-        self.parameter = input_data["parameter"]
-        self.knots = list(input_data["knots"])
-
-        # knots의 개수 확인
-        # len(knots) = control point 개수 + Degree - 1 이므로 역산해서 cp 개수를 구함
-        self.control_point_count = len(self.knots) - self.degree + 1
-
-        # control points 동적 할당
-        self.control_points = []
-        for i in range(self.control_point_count):
-            key = "cp" + str(i)
-            self.control_points.append(input_data[key])
-
-        # 곡선이 정의되는 구간 (양 끝 Degree개의 knot는 중복 구간이라 제외)
-        self.domain_start = self.knots[self.degree - 1]
-        self.domain_end = self.knots[len(self.knots) - self.degree]
-
-    # Greville abscissae
-    def greville(self):
+class BuildCurve:
+    def Greville(self):
         # ζ_i = (u_i + u_{i+1} + ... + u_{i+Degree-1}) / Degree
         self.greville_X = []
-
+    
         for i in range(self.control_point_count):
             knot_group = self.knots[i:i + self.degree]
-
+    
             total = 0
             for knot in knot_group:
                 total += knot
-
+    
             self.greville_X.append(total / self.degree)
-
+    
         return self.greville_X
-
-    # Knot insertion
+# Knot insertion
     # knot 하나를 끼워 넣어도 곡선 모양은 그대로이고, control point만 하나 늘어남
-    def insert_knot(self, new_knot):
+    def Insert_knot(self, new_knot):
         multiplicity = self.knots.count(new_knot)
 
         # new_knot이 들어갈 구간 찾기: u[span] <= new_knot < u[span+1]
@@ -89,7 +59,7 @@ class de_boor:
 
     # de Boor algorithm - Evaluation
     # u에서의 knot 중복도를 확인해서, Degree가 될 때까지만 insert_knot을 반복
-    def evaluate(self, u):
+    def Evaluate(self, u):
         # 원본 knots/control_points를 건드리지 않도록 얕은 복제본에서 계산
         clone = de_boor.__new__(de_boor)
         clone.degree = self.degree
@@ -107,7 +77,7 @@ class de_boor:
         return clone.control_points[index]
 
     # parameter 개수만큼 domain을 등분해서 각 u에 대해 evaluate()를 반복 -> POC(Point On Curve) 목록
-    def compute_curve_points(self):
+    def Compute_curve_points(self):
         self.POC = []
 
         step = (self.domain_end - self.domain_start) / self.parameter
@@ -117,67 +87,9 @@ class de_boor:
 
             self.POC.append(self.evaluate(u))
 
-        return self.POC
-
-    # control polygon과 POC를 그래프로 표시
-    def visualize(self):
-        if not hasattr(self, "POC"):
-            raise RuntimeError("compute_curve_points()를 먼저 호출해야 합니다.")
-
-        abscissae = self.greville()
-
-        if isinstance(self.control_points[0], Vector):
-            cp_x = [cp.components[0] for cp in self.control_points]
-            cp_y = [cp.components[1] for cp in self.control_points]
-
-            poc_x = [point.components[0] for point in self.POC]
-            poc_y = [point.components[1] for point in self.POC]
-        else:
-            # control point가 scalar일 때는 Greville abscissae를 가로축으로 사용
-            cp_x = abscissae
-            cp_y = self.control_points
-
-            step = (self.domain_end - self.domain_start) / self.parameter
-            poc_x = [self.domain_start + k * step for k in range(self.parameter + 1)]
-            poc_y = self.POC
-
-        plt.plot(
-            cp_x, cp_y,
-            linestyle='-', color='black',
-            marker='o', markersize=8,
-            markerfacecolor='white', markeredgecolor='black',
-            label='Control Polygon',
-        )
-        plt.plot(
-            poc_x, poc_y,
-            linestyle='-', color='blue',
-            marker='o', markersize=4,
-            label='B-Spline Curve',
-        )
-
-        plt.title("B-Spline Curve (Degree " + str(self.degree) + ")")
-        plt.legend()
-        plt.show()
+        return self.POC    
 
 class Interpolation:
-    def __init__(self,input_data:dict): #딕셔너리로 input_data받기
-
-        if not isinstance(input_data, dict):
-            raise TypeError("input_data는 dict")
-
-        self.input_data = input_data
-        self.degree = input_data["Degree"]
-        self.parameter = input_data["parameter"]
-
-        # poc 동적할당
-        self.poc = []
-        i = 0
-        while ("poc" + str(i)) in input_data:
-            self.poc.append(input_data["poc" + str(i)])
-            i += 1
-
-        self.poc_count = len(self.poc)
-
     # Chordlength
     def Chordlength(self):
         # l[i-1]
@@ -220,7 +132,7 @@ class Interpolation:
         return self.knots
 
     # basis function
-    def basis_function(self, index, u):
+    def Basis_function(self, index, u):
         unit_input = {
             "Degree": self.degree,
             "parameter": self.parameter,
@@ -276,41 +188,3 @@ class Interpolation:
         self.curve = self.curve_solver.compute_curve_points()
 
         return self.curve
-
-    # ⑤ Visualization
-    def Visualization(self):
-        cp_x = [cp.components[0] for cp in self.control_points]
-        cp_y = [cp.components[1] for cp in self.control_points]
-
-        # 첫/마지막 CP는 POC 시작·끝점과 같은 위치라 곡선 마커와 겹치므로 흰 점 표시에서는 제외
-        middle_control_points = self.control_points[1:-1]
-
-        middle_cp_x = [cp.components[0] for cp in middle_control_points]
-        middle_cp_y = [cp.components[1] for cp in middle_control_points]
-
-        poc_x = [point.components[0] for point in self.curve]
-        poc_y = [point.components[1] for point in self.curve]
-
-        plt.plot(
-            cp_x, cp_y,
-            linestyle='-', color='black',
-            label='Control Polygon',
-        )
-        plt.plot(
-            middle_cp_x, middle_cp_y,
-            linestyle='None',
-            marker='o', markersize=8,
-            markerfacecolor='white', markeredgecolor='black',
-            label='Control Points',
-        )
-        plt.plot(
-            poc_x, poc_y,
-            linestyle='-', color='blue',
-            marker='o', markersize=4,
-            label='B-Spline Curve',
-        )
-
-        plt.title("B-Spline Interpolation (Degree " + str(self.degree) + ")")
-        plt.axis('equal')
-        plt.legend()
-        plt.show()
