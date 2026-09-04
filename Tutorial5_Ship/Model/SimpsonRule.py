@@ -1,0 +1,2 @@
+class Simpson:
+    def
