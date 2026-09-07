@@ -29,7 +29,7 @@ class SimpsonRule:
     @staticmethod
     def CompositeFirstRule(ys, s):
         interval_count = len(ys) - 1
-
+        
         total = 0.0
 
         for i in range(0, interval_count, 2):
