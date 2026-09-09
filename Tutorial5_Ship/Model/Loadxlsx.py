@@ -54,3 +54,40 @@ class Loadxlsx:
             "waterlines": waterlines,
             "half_breadth": half_breadth,
         }
+
+    # (xs, ys) 데이터에서 x에 해당하는 y를 선형보간으로 구한다
+    @staticmethod
+    def linear_interpolation(xs, ys, x):
+        for i in range(len(xs) - 1):
+            if xs[i] <= x <= xs[i + 1]:
+                ratio = (x - xs[i]) / (xs[i + 1] - xs[i])
+                return ys[i] + (ys[i + 1] - ys[i]) * ratio
+
+        raise ValueError(f"{x}는 보간 범위({xs[0]} ~ {xs[-1]})를 벗어났습니다.")
+
+    # 원본 waterline은 0~16m가 1m 간격, 16~30m가 2m 간격이라
+    # Simpson 법칙을 그대로 쓸 수 없다.
+    # 빠져있는 17,19,...,29m를 선형보간해서 0~30m 전체를 1m 등간격으로 만든다.
+    @staticmethod
+    def interpolate(data):
+        raw_waterlines = data["waterlines"]
+        raw_half_breadth = data["half_breadth"]
+
+        # 0, 1, 2, ..., 30 (31개)
+        waterlines = [float(z) for z in range(int(raw_waterlines[-1]) + 1)]
+
+        half_breadth = {}
+
+        for station, raw_offsets in raw_half_breadth.items():
+            offsets = []
+
+            for z in waterlines:
+                offsets.append(Loadxlsx.linear_interpolation(raw_waterlines, raw_offsets, z))
+
+            half_breadth[station] = offsets
+
+        return {
+            "stations": data["stations"],
+            "waterlines": waterlines,
+            "half_breadth": half_breadth,
+        }
