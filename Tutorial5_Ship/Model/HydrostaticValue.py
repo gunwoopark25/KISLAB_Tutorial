@@ -31,9 +31,11 @@ class Calculate:
         areas = []
 
         for station in self.stations:
+            # station마다 단면적 구하기
             ys = self.half_breadth[station]
             area = 0.0
 
+            # 정수부분
             if n >= 2:
                 if n % 2 == 0:
                     # 구간 개수가 짝수 -> 1법칙만으로 딱 떨어짐
@@ -56,6 +58,8 @@ class Calculate:
         # station 21개 = 20구간, 짝수라 1법칙만으로 계산됨
         return SimpsonRule.CompositeFirstRule(areas, self.station_spacing)
         # ext
+    def Volume_ext(self):
+        pass
 
     # Displacement
         # mld
@@ -72,7 +76,37 @@ class Calculate:
         # L
     # MTC
     # TPC
-    # WSA
+
+    # WSA : 각 station의 girth(침수 둘레)를 구한 뒤, station 방향으로 적분해서 침수 표면적을 구한다.
+    def WSA(self):
+        # 정수부분 소수 부분 나누기
+        n = math.floor(self.draft)
+        remainder = self.draft - n
+        # g(x)
+        girths = []
+
+        for station in self.stations:
+            # station마다 girth(침수 둘레) 구하기
+            ys = self.half_breadth[station]
+            girth = 0.0
+
+            # 정수부분 : 인접한 waterline 두 점 사이를 직선으로 보고 그 길이를 더한다
+            for i in range(n):
+                dy = ys[i + 1] - ys[i]
+                girth += math.hypot(dy, self.waterline_spacing)
+
+            # 소수 흘수의 마지막 자투리 구간 (예: 19.0 ~ 19.6)
+            if remainder > 0:
+                y_draft = Loadxlsx.linear_interpolation(self.waterlines, ys, self.draft)
+                dy = y_draft - ys[n]
+                girth += math.hypot(dy, remainder)
+
+            # 오프셋이 반폭이라 2배
+            girths.append(2 * girth)
+
+        # station 방향 적분 (station 21개 = 20구간, 짝수라 1법칙만으로 계산됨)
+        return SimpsonRule.CompositeFirstRule(girths, self.station_spacing)
+
     # CB
     # CWP
     # CM

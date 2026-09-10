@@ -38,5 +38,8 @@ print("waterline_spacing =", calculate.waterline_spacing,"m")
 # ============================================================
 # Volume_mld 계산
 # ============================================================
-volume = calculate.Volume_mld()
-print("Volume_mld =", volume, "m^3")
+volume_ext = calculate.Volume_mld()
+print("Volume_mld =", volume_ext, "m^3")
+
+WSA = calculate.WSA()
+print("WSA = ", WSA, "m^3")

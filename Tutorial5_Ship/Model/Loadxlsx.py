@@ -36,7 +36,7 @@ class Loadxlsx:
                 continue
 
             station = int(station_value)
-
+            # mm단위를 m로 변경
             offsets_mm = row[1:1 + len(waterlines)]
             offsets_m = []
 
