@@ -1,8 +1,9 @@
 import sys
 from pathlib import Path
+from typing import cast
 
 from PyQt5 import uic
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtBoundSignal
 from PyQt5.QtWidgets import (
     QApplication, QAbstractItemView, QGridLayout, QHeaderView,
     QMainWindow, QMessageBox, QTableWidgetItem, QVBoxLayout,
@@ -38,7 +39,7 @@ class CalculationWorker(QThread):
 
 
 class MainWindow(QMainWindow):
-    # None: Input의 Specific_Draft 목록 사용.
+    # None: 1m~D까지 0.5m 간격 + Input의 Specific_Draft 목록 사용.
     # 더 촘촘한 곡선이 필요하면 예: [i / 2 for i in range(2, 51)]
     DRAFTS = None
 
@@ -81,8 +82,8 @@ class MainWindow(QMainWindow):
         for title in (self.textEdit, self.textEdit_2, self.textEdit_3):
             title.setReadOnly(True)
             title.setFixedHeight(56)
-            title.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-            title.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            title.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            title.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         left.addWidget(self.pushButton)
         left.addWidget(self.textEdit_3)
@@ -111,7 +112,8 @@ class MainWindow(QMainWindow):
             for column, text in enumerate((name, f"{value:g}", unit)):
                 item = QTableWidgetItem(text)
                 item.setTextAlignment(
-                    (Qt.AlignRight if column == 1 else Qt.AlignLeft) | Qt.AlignVCenter
+                    (Qt.AlignmentFlag.AlignRight if column == 1 else Qt.AlignmentFlag.AlignLeft)
+                    | Qt.AlignmentFlag.AlignVCenter
                 )
                 self.tableWidget_2.setItem(row, column, item)
 
@@ -124,7 +126,8 @@ class MainWindow(QMainWindow):
         self.worker = CalculationWorker(self.DRAFTS, self)
         self.worker.succeeded.connect(self.show_results)
         self.worker.failed.connect(self.show_error)
-        self.worker.finished.connect(self.finish_calculation)
+        # PyQt5 5.15.4의 stub은 finished 시그널을 일반 메서드로 표기한다.
+        cast(pyqtBoundSignal, self.worker.finished).connect(self.finish_calculation)
         self.worker.start()
 
     def show_results(self, data):
@@ -132,7 +135,7 @@ class MainWindow(QMainWindow):
             self.update_dimension_table(data["dimension"])
             self.table_view.update_table(data["results"])
             self.curve_view.update_curve(data["results"])
-            self.body_view.update_body(data["offset_data"], data["dimension"])
+            self.body_view.update_body(data["body_data"], data["dimension"])
         except Exception as error:
             self.show_error(f"화면 표시 오류: {error}")
             return
@@ -140,7 +143,7 @@ class MainWindow(QMainWindow):
         self.comboBox_4.setEnabled(True)
         self.statusbar.showMessage(
             f"완료: {len(data['results'])}개 흘수 계산 | "
-            "Curve의 X축은 각 항목의 최대 절댓값으로 정규화한 값입니다."
+            "Curve 배율은 범례 참고 | WSA는 선저를 포함한 둘레 적분 근삿값입니다."
         )
 
     def show_error(self, message):
@@ -148,18 +151,20 @@ class MainWindow(QMainWindow):
         QMessageBox.critical(self, "Hydrostatic calculation", message)
 
     def finish_calculation(self):
-        self.worker.deleteLater()
+        if self.worker is not None:
+            self.worker.deleteLater()
         self.worker = None
         self.pushButton.setEnabled(True)
         self.pushButton.setText("Start")
 
-    def closeEvent(self, event):
+    def closeEvent(self, a0):
         # 실행 중인 QThread가 창과 함께 파괴되는 것을 방지한다.
         if self.worker is not None:
             self.statusbar.showMessage("계산이 완료된 후 창을 닫아주세요.")
-            event.ignore()
+            if a0 is not None:
+                a0.ignore()
         else:
-            super().closeEvent(event)
+            super().closeEvent(a0)
 
 
 def main():

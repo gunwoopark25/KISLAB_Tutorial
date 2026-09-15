@@ -1,20 +1,16 @@
 import importlib
+import math
 import sys
 from pathlib import Path
 
 
 # 프로젝트 폴더 경로
 ROOT_DIR = Path(__file__).resolve().parent.parent
-MODEL_DIR = ROOT_DIR / "Model"
-INPUT_DIR = ROOT_DIR / "Input"
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
-# 기존 Model 내부의 import 방식에 맞춰 경로 추가
-for directory in (MODEL_DIR, INPUT_DIR):
-    if str(directory) not in sys.path:
-        sys.path.insert(0, str(directory))
-
-from Loadxlsx import Loadxlsx
-from HydrostaticValue import Calculate
+from Model.Loadxlsx import Loadxlsx
+from Model.HydrostaticValue import Calculate
 
 
 class Playing:
@@ -23,7 +19,7 @@ class Playing:
         """
         drafts:
             계산할 흘수 목록.
-            생략하면 Input의 Specific_Draft 값을 사용한다.
+            생략하면 1m~D까지 0.5m 간격과 Input의 지정 흘수를 사용한다.
 
         반환값:
             dimension   : Dimension 표에 표시할 입력값
@@ -33,13 +29,20 @@ class Playing:
 
         # 1. 선박 제원 읽기
         # 파일명이 숫자로 시작하므로 importlib 사용
-        ship = importlib.import_module("320K_VLCC")
+        ship = importlib.import_module("Input.320K_VLCC")
 
         dimension = dict(ship.Dimension)
         specific_dimension = dict(ship.Specific_Dimension)
 
         # 2. Offset 읽기 및 전처리
-        raw_data = Loadxlsx.load()
+        body_data = Loadxlsx.load(include_overhang=True)
+        raw_data = {
+            "stations": [s for s in body_data["stations"] if 0 <= s <= 20],
+            "waterlines": body_data["waterlines"],
+            "half_breadth": {
+                s: ys for s, ys in body_data["half_breadth"].items() if 0 <= s <= 20
+            },
+        }
         offset_data = Loadxlsx.interpolate(raw_data)
 
         # 현재 계산 코드는 0m부터 1m 간격인 데이터를 전제로 한다.
@@ -53,6 +56,9 @@ class Playing:
                 for key, value in specific_dimension.items()
                 if key.startswith("Specific_Draft_")
             ]
+            upper = min(float(dimension["D"]), offset_data["waterlines"][-1])
+            drafts.extend(i / 2 for i in range(2, math.floor(upper * 2) + 1))
+            drafts.append(upper)
 
         drafts = sorted(set(float(draft) for draft in drafts))
 
@@ -87,6 +93,7 @@ class Playing:
         return {
             "dimension": dimension,
             "offset_data": offset_data,
+            "body_data": body_data,
             "results": results,
         }
 
@@ -139,7 +146,7 @@ class Playing:
 
 
 if __name__ == "__main__":
-    # Input에 지정한 19.6m, 20.8m, 21.3m 계산
+    # 기본 흘수 범위 및 Input의 지정 흘수 계산
     data = Playing.run()
 
     # 여러 흘수를 지정하려면:

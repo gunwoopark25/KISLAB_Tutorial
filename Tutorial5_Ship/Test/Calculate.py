@@ -2,19 +2,16 @@ import os
 import sys
 import importlib
 
-# Model, Input 폴더를 path에 추가 (Model 내부 모듈들이 flat import를 사용하기 때문)
+# 파일을 직접 실행할 때도 프로젝트 패키지를 찾도록 루트를 추가한다.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_DIR = os.path.join(ROOT_DIR, "Model")
-INPUT_DIR = os.path.join(ROOT_DIR, "Input")
-sys.path.insert(0, MODEL_DIR)
-sys.path.insert(0, INPUT_DIR)
+sys.path.insert(0, ROOT_DIR)
 
-from Loadxlsx import Loadxlsx
-from HydrostaticValue import Calculate
+from Model.Loadxlsx import Loadxlsx
+from Model.HydrostaticValue import Calculate
 
 # 320K_VLCC.py는 파일명이 숫자로 시작해서 "import 320K_VLCC" 문법을 못 쓰기 때문에
 # importlib로 불러온다
-vlcc = importlib.import_module("320K_VLCC")
+vlcc = importlib.import_module("Input.320K_VLCC")
 
 # ============================================================
 # 데이터 입력

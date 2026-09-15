@@ -101,7 +101,7 @@ class HydrostaticTableView:
 
                     item = QTableWidgetItem(text)
                     item.setTextAlignment(
-                        Qt.AlignRight | Qt.AlignVCenter
+                        Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
                     )
 
                     # 흘수 행 강조

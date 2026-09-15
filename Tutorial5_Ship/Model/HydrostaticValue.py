@@ -1,7 +1,7 @@
 import math
 
-from Loadxlsx import Loadxlsx
-from SimpsonRule import SimpsonRule
+from Model.Loadxlsx import Loadxlsx
+from Model.SimpsonRule import SimpsonRule
 
 class Calculate:
     def __init__(self, offset_data, dimension, specific_dimension, draft):
@@ -288,7 +288,8 @@ class Calculate:
 
         return result
 
-    # WSA : 각 station의 girth(침수 둘레)를 구한 뒤, station 방향으로 적분해서 침수 표면적을 구한다.
+    # WSA : 선저를 포함한 침수 둘레의 길이 방향 적분 근사.
+    # 길이 방향 표면 경사와 AP/FP 바깥 끝단 면적은 포함하지 않는다.
     def WSA(self):
         # 정수부분 소수 부분 나누기
         n = math.floor(self.draft)
@@ -299,7 +300,8 @@ class Calculate:
         for station in self.stations:
             # station마다 girth(침수 둘레) 구하기
             ys = self.half_breadth[station]
-            girth = 0.0
+            # z=0에서 중심선부터 Bottom 반폭까지의 평평한 선저도 포함한다.
+            girth = ys[0]
 
             # 정수부분 : 인접한 waterline 두 점 사이를 직선으로 보고 그 길이를 더한다
             for i in range(n):

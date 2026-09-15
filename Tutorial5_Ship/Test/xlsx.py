@@ -1,11 +1,11 @@
 import os
 import sys
 
-# Model 폴더를 path에 추가 (Model 내부 모듈들이 flat import를 사용하기 때문)
-MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Model")
-sys.path.insert(0, MODEL_DIR)
+# 파일을 직접 실행할 때도 프로젝트 패키지를 찾도록 루트를 추가한다.
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
 
-from Loadxlsx import Loadxlsx
+from Model.Loadxlsx import Loadxlsx
 
 file = Loadxlsx.load()
 print(file["stations"])
