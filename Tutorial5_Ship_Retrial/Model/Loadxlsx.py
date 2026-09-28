@@ -1,8 +1,9 @@
 import openpyxl
+from Input.path import path
 
 class Loadxlsx:
     # InputData 주소
-    xlsx_PATH = r"/Users/gunwoo/Library/CloudStorage/SynologyDrive-개인/01. Code 공부/KISLAB_Tutorial/Tutorial5_Ship/Input/320K offset.xlsx"
+    xlsx_PATH = path["window"]
 
     @staticmethod
     def load(path=None, include_overhang=False):

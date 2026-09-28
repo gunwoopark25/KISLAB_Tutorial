@@ -9,7 +9,6 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from Model.Loadxlsx import Loadxlsx
 from Model.HydrostaticValue import Calculate
 
 
@@ -34,16 +33,9 @@ class Playing:
         dimension = dict(ship.Dimension)
         specific_dimension = dict(ship.Specific_Dimension)
 
-        # 2. Offset 읽기 및 전처리
-        body_data = Loadxlsx.load(include_overhang=True)
-        raw_data = {
-            "stations": [s for s in body_data["stations"] if 0 <= s <= 20],
-            "waterlines": body_data["waterlines"],
-            "half_breadth": {
-                s: ys for s, ys in body_data["half_breadth"].items() if 0 <= s <= 20
-            },
-        }
-        offset_data = Loadxlsx.interpolate(raw_data)
+        # 2. Offset 읽기 (OffsetData가 최초 1회만 엑셀을 읽고 이후에는 캐싱된 값을 반환한다)
+        body_data = ship.OffsetData.body_data()
+        offset_data = ship.OffsetData.offset_data()
 
         # 현재 계산 코드는 0m부터 1m 간격인 데이터를 전제로 한다.
         if specific_dimension["Step"] != 1:
